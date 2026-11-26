@@ -1,5 +1,3 @@
 jdk:
   - openjdk17
 
-install:
-  - ./gradlew :bubblechat:publishToMavenLocal
