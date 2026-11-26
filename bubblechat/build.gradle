@@ -1,3 +1,4 @@
+
 plugins {
     id 'com.android.library'
 }
@@ -15,6 +16,20 @@ android {
     publishing {
         singleVariant('release') {
             withSourcesJar()
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+                groupId = 'com.github.TRaiLE-web'
+                artifactId = 'bubblechat'
+                version = '1.0.0'
+            }
         }
     }
 }
