@@ -1,6 +1,7 @@
 
 plugins {
     id 'com.android.library'
+    id 'maven-publish'
 }
 
 android {
@@ -26,7 +27,7 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
 
-                groupId = 'com.github.TRaiLE-web'
+                groupId = 'com.github.TRaiLE-web.ChatBubble'
                 artifactId = 'bubblechat'
                 version = '1.0.0'
             }
