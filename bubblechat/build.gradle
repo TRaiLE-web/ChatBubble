@@ -1,4 +1,6 @@
-plugins { id 'com.android.library' }
+plugins {
+    id 'com.android.library'
+}
 
 android {
     namespace 'com.mes.bc'
@@ -8,5 +10,11 @@ android {
         minSdk 21
         targetSdk 35
         consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
     }
 }
