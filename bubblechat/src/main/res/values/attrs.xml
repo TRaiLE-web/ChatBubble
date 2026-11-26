@@ -1,0 +1,25 @@
+<resources>
+    <declare-styleable name="BubbleChat">
+        <attr name="bc_bubbleColor" format="color" />
+        <attr name="bc_arrowSide" format="enum">
+            <enum name="none" value="0" />
+            <enum name="left" value="1" />
+            <enum name="right" value="2" />
+        </attr>
+        <attr name="bc_arrowWidth" format="dimension" />
+        <attr name="bc_arrowHeight" format="dimension" />
+        <attr name="bc_arrowPosition" format="float" />
+        <attr name="bc_cornerTopLeft" format="dimension" />
+        <attr name="bc_cornerTopRight" format="dimension" />
+        <attr name="bc_cornerBottomRight" format="dimension" />
+        <attr name="bc_cornerBottomLeft" format="dimension" />
+        <attr name="bc_strokeColor" format="color" />
+        <attr name="bc_strokeWidth" format="dimension" />
+        <attr name="bc_shadowColor" format="color" />
+        <attr name="bc_shadowRadius" format="dimension" />
+        <attr name="bc_shadowDx" format="dimension" />
+        <attr name="bc_shadowDy" format="dimension" />
+        <attr name="bc_groupWindowMs" format="integer" />
+        <attr name="bc_showArrow" format="boolean" />
+    </declare-styleable>
+</resources>
