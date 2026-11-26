@@ -451,4 +451,177 @@ public class BubbleChat extends FrameLayout {
                 a.alpha(1f);
                 break;
             case ANIM_SCALE:
-                setAlpha(0
+                setAlpha(0f); setScaleX(0.6f); setScaleY(0.6f);
+                a.alpha(1f).scaleX(1f).scaleY(1f);
+                break;
+            case ANIM_SLIDE_UP:
+                setAlpha(0f); setTranslationY(dp(24));
+                a.alpha(1f).translationY(0f);
+                break;
+            case ANIM_SLIDE_SIDE:
+                setAlpha(0f); setTranslationX(side * dp(40));
+                a.alpha(1f).translationX(0f);
+                break;
+            case ANIM_POP:
+                setAlpha(0f); setScaleX(0f); setScaleY(0f);
+                a.setInterpolator(new OvershootInterpolator(1.6f));
+                a.alpha(1f).scaleX(1f).scaleY(1f);
+                break;
+        }
+        a.start();
+    }
+
+    /** Plays the reverse animation, then runs {@code end} (e.g. remove the item). */
+    public void playDisappear(final Runnable end) {
+        animate().cancel();
+        if (!animationsEnabled || appearAnimation == ANIM_NONE) {
+            if (end != null) end.run();
+            return;
+        }
+        updatePivot();
+        final float side = arrowSide == ARROW_RIGHT ? 1f : -1f;
+        ViewPropertyAnimator a = animate().setDuration(Math.max(120L, animationDuration * 3 / 4))
+                .setInterpolator(new AccelerateInterpolator());
+        switch (appearAnimation) {
+            case ANIM_SCALE:      a.alpha(0f).scaleX(0.6f).scaleY(0.6f); break;
+            case ANIM_SLIDE_UP:   a.alpha(0f).translationY(dp(24)); break;
+            case ANIM_SLIDE_SIDE: a.alpha(0f).translationX(side * dp(40)); break;
+            case ANIM_POP:        a.alpha(0f).scaleX(0f).scaleY(0f); break;
+            default:              a.alpha(0f); break;
+        }
+        a.withEndAction(new Runnable() {
+            @Override public void run() {
+                if (end != null) end.run();
+                resetTransforms(); // keeps recycled views clean
+            }
+        });
+        a.start();
+    }
+
+    /** Quick horizontal shake, e.g. "message failed to send". */
+    public void shake() {
+        animate().cancel();
+        float d = dp(8);
+        ObjectAnimator.ofFloat(this, View.TRANSLATION_X,
+                0f, -d, d, -d * 0.75f, d * 0.75f, -d * 0.4f, 0f).setDuration(380).start();
+    }
+
+    /** Soft highlight flash, e.g. when jumping to a replied message. */
+    public void flash() {
+        if (flashAnimator != null) flashAnimator.cancel();
+        flashAnimator = startAnim(T_FLASH, 900, 0f, 1f, 0f);
+    }
+
+    private void resetTransforms() {
+        setAlpha(1f);
+        setScaleX(1f); setScaleY(1f);
+        setTranslationX(0f); setTranslationY(0f);
+    }
+
+    private ValueAnimator startAnim(final int target, long duration, float... values) {
+        ValueAnimator va = ValueAnimator.ofFloat(values);
+        va.setDuration(duration);
+        va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override public void onAnimationUpdate(ValueAnimator animation) {
+                float v = (Float) animation.getAnimatedValue();
+                if (target == T_TAIL) tailProgress = v;
+                else if (target == T_SELECT) selectedAlpha = v;
+                else flashAlpha = v;
+                invalidate();
+            }
+        });
+        va.start();
+        return va;
+    }
+
+    @Override protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (animateOnAttach && !appearPlayed) playAppear();
+    }
+
+    @Override protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (tailAnimator != null) tailAnimator.cancel();
+        if (selectAnimator != null) selectAnimator.cancel();
+        if (flashAnimator != null) flashAnimator.cancel();
+        animate().cancel();
+    }
+
+    // =====================================================================
+    // Selection
+    // =====================================================================
+
+    public void setMessageSelected(boolean selected) {
+        if (selected == selectedFlag) return;
+        selectedFlag = selected;
+        if (selectAnimator != null) selectAnimator.cancel();
+        float to = selected ? 1f : 0f;
+        if (animationsEnabled && isLaidOut()) {
+            selectAnimator = startAnim(T_SELECT, 140, selectedAlpha, to);
+        } else {
+            selectedAlpha = to;
+            invalidate();
+        }
+    }
+
+    public boolean isMessageSelected() { return selectedFlag; }
+    public void setSelectedColor(int color) { selectedColor = color; invalidate(); }
+
+    // =====================================================================
+    // Setters
+    // =====================================================================
+
+    public void setBubbleColor(int color) { bubbleColor = color; gradientDirty = true; invalidate(); }
+    public void setGradient(int endColor, float angleDegrees) {
+        hasGradient = true; gradientEndColor = endColor; gradientAngle = angleDegrees;
+        gradientDirty = true; invalidate();
+    }
+    public void clearGradient() { hasGradient = false; invalidate(); }
+
+    public void setShowArrow(boolean show) { showArrow = show; updateTail(true); }
+    public void setArrow(int side, float widthPx, float heightPx, float position) {
+        arrowSide = side; arrowWidth = widthPx; arrowHeight = heightPx;
+        arrowPosition = clamp(position, 0.05f, 0.95f);
+        applyInsets(); updatePivot(); updateTail(false);
+    }
+    public void setArrowSide(int side) { arrowSide = side; applyInsets(); updatePivot(); updateTail(false); }
+    public void setTailStyle(int style) { tailStyle = style; applyInsets(); }
+    /** align: ALIGN_*; offsetPx: distance from the top/bottom edge (for ALIGN_TOP / ALIGN_BOTTOM). */
+    public void setTailAlign(int align, float offsetPx) { tailAlign = align; tailOffset = offsetPx; invalidate(); }
+    public void setTailCornerRadius(float px) { tailCornerRadius = px; invalidate(); }
+    public void setAnimateTail(boolean animate) { animateTail = animate; }
+
+    public void setCornerRadii(float topLeft, float topRight, float bottomRight, float bottomLeft) {
+        tl = topLeft; tr = topRight; br = bottomRight; bl = bottomLeft; invalidate();
+    }
+    /** Radius used between grouped messages on the tail side. Negative = disabled. */
+    public void setGroupedCornerRadius(float px) { groupedCorner = px; invalidate(); }
+
+    public void setStroke(int color, float widthPx) { strokeColor = color; strokeWidth = widthPx; invalidate(); }
+    public void setShadow(int color, float radiusPx, float dxPx, float dyPx) {
+        shadowColor = color; shadowRadius = radiusPx; shadowDx = dxPx; shadowDy = dyPx;
+        applyInsets();
+    }
+
+    public void setGroupWindowMs(long millis) { groupWindowMs = Math.max(0L, millis); }
+    public void setMaxWidth(int px) { maxWidth = Math.max(0, px); requestLayout(); }
+
+    public void setAnimationsEnabled(boolean enabled) { animationsEnabled = enabled; }
+    public boolean isAnimationsEnabled() { return animationsEnabled; }
+    public void setAppearAnimation(int type) { appearAnimation = type; }
+    public void setAnimationDuration(long millis) { animationDuration = Math.max(0L, millis); }
+    public void setAnimateOnAttach(boolean animate) { animateOnAttach = animate; }
+    /** Mark the row as "already animated" so it won't replay while scrolling/recycling. */
+    public void setAppearPlayed(boolean played) { appearPlayed = played; }
+
+    /** Quick preset: curved bottom tail, grouped corners, like Telegram. */
+    public void applyTelegramPreset() {
+        tailStyle = TAIL_CURVED;
+        tailAlign = ALIGN_BOTTOM;
+        tailOffset = 0f;
+        arrowWidth = dp(12);
+        arrowHeight = dp(6);
+        groupedCorner = dp(5);
+        applyInsets(); updateTail(false);
+    }
+                }
