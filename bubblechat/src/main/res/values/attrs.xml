@@ -21,5 +21,44 @@
         <attr name="bc_shadowDy" format="dimension" />
         <attr name="bc_groupWindowMs" format="integer" />
         <attr name="bc_showArrow" format="boolean" />
+
+        <!-- tail types -->
+        <attr name="bc_tailStyle" format="enum">
+            <enum name="triangle" value="0" />
+            <enum name="rounded" value="1" />
+            <enum name="curved" value="2" />
+            <enum name="corner" value="3" />
+        </attr>
+        <attr name="bc_tailAlign" format="enum">
+            <enum name="top" value="0" />
+            <enum name="center" value="1" />
+            <enum name="bottom" value="2" />
+            <enum name="custom" value="3" />
+        </attr>
+        <attr name="bc_tailOffset" format="dimension" />
+        <attr name="bc_tailCornerRadius" format="dimension" />
+        <attr name="bc_animateTail" format="boolean" />
+
+        <!-- grouping -->
+        <attr name="bc_groupedCorner" format="dimension" />
+
+        <!-- look -->
+        <attr name="bc_gradientEndColor" format="color" />
+        <attr name="bc_gradientAngle" format="float" />
+        <attr name="bc_maxWidth" format="dimension" />
+        <attr name="bc_selectedColor" format="color" />
+
+        <!-- animations -->
+        <attr name="bc_animationsEnabled" format="boolean" />
+        <attr name="bc_appearAnimation" format="enum">
+            <enum name="none" value="0" />
+            <enum name="fade" value="1" />
+            <enum name="scale" value="2" />
+            <enum name="slideUp" value="3" />
+            <enum name="slideSide" value="4" />
+            <enum name="pop" value="5" />
+        </attr>
+        <attr name="bc_animationDuration" format="integer" />
+        <attr name="bc_animateOnAttach" format="boolean" />
     </declare-styleable>
 </resources>
